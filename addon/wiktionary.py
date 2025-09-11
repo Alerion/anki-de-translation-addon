@@ -31,6 +31,9 @@ class Page:
 
 # https://www.mediawiki.org/wiki/API:Query
 SEARCH_URL = "https://de.wiktionary.org/w/api.php"
+HEADERS = {
+    'User-Agent': 'AnkiAddonBot https://github.com/Alerion/anki-de-translation-addon'
+}
 
 
 def find_word_page(word: str) -> Optional[Page]:
@@ -41,7 +44,7 @@ def find_word_page(word: str) -> Optional[Page]:
         "inprop": "url",
         "titles": word,
     }
-    response = requests.get(SEARCH_URL, params).json()
+    response = requests.get(SEARCH_URL, params, headers=HEADERS).json()
     pages = response["query"]["pages"]
     if not pages:
         return None
@@ -65,7 +68,7 @@ def get_page_wikitext(page_id: int) -> str:
         "prop": "wikitext",
         "pageid": page_id,
     }
-    response = requests.get(PAGE_URL, params).json()
+    response = requests.get(PAGE_URL, params, headers=HEADERS).json()
     wikitext = response["parse"]["wikitext"]["*"]
     return wikitext
 
@@ -82,7 +85,7 @@ def get_file_url(file_name: str) -> Optional[str]:
         "iiprop": "url",
         "titles": f"File:{file_name}",
     }
-    response = requests.get(FILES_URL, params).json()
+    response = requests.get(FILES_URL, params, headers=HEADERS).json()
     pages = list(response["query"]["pages"].values())
     imageinfo = pages[0]["imageinfo"][0]
     return imageinfo["url"]

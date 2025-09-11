@@ -129,6 +129,12 @@ GENDER_TO_TEXT = {
     Gender.NEUTRAL: DAS_TEXT,
 }
 
+GENDER_TO_ARTICLE = {
+    Gender.MALE: "der",
+    Gender.FEMALE: "die",
+    Gender.NEUTRAL: "das",
+}
+
 
 def insert_word_description(
     editor: aqt.editor.Editor, only_audio: bool = False
@@ -137,6 +143,7 @@ def insert_word_description(
 
     clipboard = editor.mw.app.clipboard()
     word = clipboard.text().strip()
+    word_to_translate = word
 
     if not word:
         showInfo("No word found in clipboard")
@@ -167,6 +174,7 @@ def insert_word_description(
         gender = get_gender_from_wikitext(wikitext)
         if gender:
             article_text = GENDER_TO_TEXT[gender]
+            word_to_translate = f"{GENDER_TO_ARTICLE[gender]} {word_to_translate}"
 
         # Set Example field.
         plural = get_plural_from_wikitext(wikitext)
@@ -204,13 +212,15 @@ def insert_word_description(
         for example in examples:
             editor.note["Example"] += f"<li>{example}</li>"
         editor.note["Example"] += "</ul>"
+    else:
+        editor.note["Example"] += "<br><br>"
 
     # Add Wiktionary URL.
     editor.note["Example"] += f'<a href="{page.full_url}">{page.full_url}</a>'
 
     # Add translation.
     if not editor.note["Back"].strip() and config["INSERT_TRANSLATION"] and config["DEEPL_AUTH_KEY"]:
-        uk_word = get_uk_translation(word, config["DEEPL_AUTH_KEY"])
+        uk_word = get_uk_translation(word_to_translate, config["DEEPL_AUTH_KEY"])
         editor.note["Back"] = f'<span style="font-weight: bold;">{uk_word}</span>'
 
     editor.set_note(editor.note)

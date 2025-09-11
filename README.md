@@ -16,7 +16,7 @@
 
 Run anki in console:
 
-    cd "C:\Program Files\Anki"
+    cd "cd C:/Users/user/AppData/Local/Programs/Anki"
     export QTWEBENGINE_REMOTE_DEBUGGING=8080
     ./anki-console.bat
 
