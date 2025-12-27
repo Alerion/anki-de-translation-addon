@@ -1,22 +1,48 @@
-[tool.poetry]
-name = "anki-quick-color-addon"
+[project]
+name = "deutsch-anki-addon"
 version = "0.1.0"
-description = ""
-authors = ["Dmytro Kostochko <alerion.um@gmail.com>"]
-license = "MIT"
+description = "Addon for Anki to generage cards for Deutsch words"
 readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "aqt~=25.9.2",
+]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-mypy = "^1.9.0"
-aqt = {extras = ["qt6"], version = "^23.12.1"}
-black = "^24.4.2"
+[dependency-groups]
+addon = [
+    "deepl~=1.18.0",
+    "google-genai~=1.54.0",
+    "requests~=2.31.0",
+]
+dev = [
+    "icecream~=2.1.0",
+    "mypy~=1.19.0",
+    "pre-commit~=4.4.0",
+    "ruff~=0.14.0",
+    "rust-just~=1.43.1",
+    "types-requests>=2.32.4.20250913",
+]
 
+[tool.ruff]
+line-length = 100
+extend-exclude = []
 
-[tool.poetry.group.addon.dependencies]
-requests = "^2.31.0"
-deepl = "^1.18.0"
+[tool.ruff.lint]
+# Add the `line-too-long` rule to the enforced rule set. By default, Ruff omits rules that
+# overlap with the use of a formatter, like Black, but we can override this behavior by
+# explicitly adding the rule.
+extend-select = ["E501", "RUF100", "I", "F401"]
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.ruff.lint.pycodestyle]
+max-line-length = 120
+
+[tool.mypy]
+packages = ["addon"]
+python_version = "3.13"
+# mypy_path = "mypy_stubs"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+enable_error_code = [
+    "truthy-bool",
+]

@@ -4,36 +4,34 @@
 https://developer.mozilla.org/en-US/docs/Web/API/document/execCommand
 """
 
-import sys
 import os.path
+import sys
+from functools import partial
 
 # Inject external dependencies.
-DEPENDENCIES_PATH = os.path.join(os.path.dirname(__file__), "./dependencies")
-sys.path.insert(0, DEPENDENCIES_PATH)
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "./dependencies"))
 
-from functools import partial
 import aqt.editor
-from aqt import gui_hooks
+from aqt import gui_hooks, mw
 from aqt.utils import showInfo
-from aqt import mw
 
-from .wiktionary import (
-    find_word_page,
-    get_page_wikitext,
-    get_audio_url_from_wikitext,
-    get_ipa_from_wikitext,
-    get_speach_part_from_wikitext,
-    SpeachPart,
-    get_gender_from_wikitext,
-    Gender,
-    get_plural_from_wikitext,
-    get_genitive_from_wikitext,
-    get_examples_from_wikitext,
-    get_help_verb_from_wikitext,
-    get_prateritum_from_wikitext,
-    get_partizip2_from_wikitext,
-)
 from .translation import get_uk_translation
+from .wiktionary import (
+    Gender,
+    SpeachPart,
+    find_word_page,
+    get_audio_url_from_wikitext,
+    get_examples_from_wikitext,
+    get_gender_from_wikitext,
+    get_genitive_from_wikitext,
+    get_help_verb_from_wikitext,
+    get_ipa_from_wikitext,
+    get_page_wikitext,
+    get_partizip2_from_wikitext,
+    get_plural_from_wikitext,
+    get_prateritum_from_wikitext,
+    get_speach_part_from_wikitext,
+)
 
 RED = "#c12d30"
 
@@ -136,9 +134,7 @@ GENDER_TO_ARTICLE = {
 }
 
 
-def insert_word_description(
-    editor: aqt.editor.Editor, only_audio: bool = False
-) -> None:
+def insert_word_description(editor: aqt.editor.Editor, only_audio: bool = False) -> None:
     config = mw.addonManager.getConfig(__name__)
 
     clipboard = editor.mw.app.clipboard()
@@ -219,7 +215,11 @@ def insert_word_description(
     editor.note["Example"] += f'<a href="{page.full_url}">{page.full_url}</a>'
 
     # Add translation.
-    if not editor.note["Back"].strip() and config["INSERT_TRANSLATION"] and config["DEEPL_AUTH_KEY"]:
+    if (
+        not editor.note["Back"].strip()
+        and config["INSERT_TRANSLATION"]
+        and config["DEEPL_AUTH_KEY"]
+    ):
         uk_word = get_uk_translation(word_to_translate, config["DEEPL_AUTH_KEY"])
         editor.note["Back"] = f'<span style="font-weight: bold;">{uk_word}</span>'
 
@@ -293,9 +293,7 @@ def add_shortcuts(shortcuts: list[tuple], editor: aqt.editor.Editor) -> None:
     shortcuts.append(("F8", partial(insert_adjective, editor)))
     shortcuts.append(("F9", partial(insert_adverb, editor)))
     shortcuts.append(("F10", partial(insert_pronoun, editor)))
-    shortcuts.append(
-        ("Alt+F1", partial(insert_audio, editor))
-    )
+    shortcuts.append(("Alt+F1", partial(insert_audio, editor)))
 
 
 # https://addon-docs.ankiweb.net/hooks-and-filters.html

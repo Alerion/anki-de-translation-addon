@@ -15,22 +15,35 @@
 
 ## Install
 
-Run anki in console:
-
-    cd "C:/Users/user/AppData/Local/Programs/Anki"
-    export QTWEBENGINE_REMOTE_DEBUGGING=8080
-    ./anki-console.bat
-
-Create symlink to addons folder:
-
-    mklink /D C:\Users\user\AppData\Roaming\Anki2\addons21\quickcolor <path to project>\anki-quick-color-addon\addon\
-
 Install dependencies:
 
-    source ./venv/Scripts/activate
-    poetry install
+    uv sync
+    . .venv/Scripts/activate
+
+Copy and edit .env file:
+
+    cp .env.template .env
+
+Create symlink to addons folder following instruction from:
+
+    just create-addon-symlink
 
 Install dependencies into addon folder
 
-    poetry export --only addon -f requirements.txt --output requirements.txt
-    pip install -r requirements.txt -t ./addon/dependencies
+    just install-dependencies-for-anki
+
+Run anki in console:
+
+    just start-anki
+
+Edit addon config in Anki UI: Tools -> Add-ons -> deutsch_anki_addon -> Config
+
+## Development
+
+Install pre-commit hooks:
+
+    uvx pre-commit install
+
+Format and check code:
+
+    just check-code

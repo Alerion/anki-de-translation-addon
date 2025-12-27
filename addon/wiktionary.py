@@ -1,7 +1,7 @@
-from typing import Optional
-from enum import Enum
 import re
 from dataclasses import dataclass
+from enum import Enum
+from typing import Optional
 
 import requests
 
@@ -31,9 +31,7 @@ class Page:
 
 # https://www.mediawiki.org/wiki/API:Query
 SEARCH_URL = "https://de.wiktionary.org/w/api.php"
-HEADERS = {
-    'User-Agent': 'AnkiAddonBot https://github.com/Alerion/anki-de-translation-addon'
-}
+HEADERS = {"User-Agent": "AnkiAddonBot https://github.com/Alerion/anki-de-translation-addon"}
 
 
 def find_word_page(word: str) -> Optional[Page]:
@@ -109,7 +107,7 @@ def get_best_audio_match(matches) -> Optional[str]:
         return matches[0].group("file")
 
 
-AUSSPRACHE_RE = re.compile(r'\{\{Aussprache\}\}(?P<aussprache>.*?)\n\{\{[^{]+\}\}', re.DOTALL)
+AUSSPRACHE_RE = re.compile(r"\{\{Aussprache\}\}(?P<aussprache>.*?)\n\{\{[^{]+\}\}", re.DOTALL)
 
 
 def get_audio_url_from_wikitext(wikitext: str) -> Optional[str]:
@@ -204,7 +202,7 @@ def get_genitive_from_wikitext(wikitext: str) -> Optional[str]:
 
 
 REF_RE = re.compile(r"<ref[^>]*>.*?</ref>")
-EXAMPLE_RE = re.compile(r'\{\{Beispiele\}\}(?P<examples>.*?)\n\{\{[^{]+\}\}', re.DOTALL)
+EXAMPLE_RE = re.compile(r"\{\{Beispiele\}\}(?P<examples>.*?)\n\{\{[^{]+\}\}", re.DOTALL)
 
 
 def get_examples_from_wikitext(wikitext: str) -> list[str]:
@@ -218,7 +216,7 @@ def get_examples_from_wikitext(wikitext: str) -> list[str]:
     for example in examples:
         example = re.sub(r":\[[\w ,–]+\]", "", example)
         example = example.replace("\n", "")
-        example = REF_RE.sub('', example)
+        example = REF_RE.sub("", example)
         example = example.strip()
         example = example.strip("„“=\n»«")
         if not example or example.startswith("::Anneliese") or len(example) > 150:
