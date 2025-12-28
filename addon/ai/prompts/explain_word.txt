@@ -20,7 +20,7 @@ Generiere ein JSON-Objekt mit folgenden Feldern:
    - Besondere Nuancen, die aus der Übersetzung nicht klar sind
    Alles durch Komma oder Semikolon getrennt. Kurz und prägnant.
 
-3. "usage_examples": Array mit 3-5 Beispielsätzen auf Deutsch.
+3. "usage_examples": Array mit 2-3 Beispielsätzen auf Deutsch.
    - 3 Sätze bei einfachen Wörtern mit einer Bedeutung
    - 5 Sätze bei Wörtern mit mehreren Bedeutungen (verschiedene Bedeutungen zeigen)
    - Sätze sollen natürlich und alltagsnah sein
