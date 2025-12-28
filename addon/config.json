@@ -1,4 +1,5 @@
 {
     "INSERT_TRANSLATION": false,
-    "DEEPL_AUTH_KEY": ""
+    "DEEPL_AUTH_KEY": "",
+    "GENAI_API_KEY": ""
 }

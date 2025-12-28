@@ -1,15 +1,17 @@
+import re
+
 import aqt.editor
 from aqt import mw
 from aqt.utils import showInfo
 
 from .. import wiktionary
+from ..ai.explain_word import ExplainWordResponse, explain_word_with_ai
 from ..card_html import (
     GENDER_TO_ARTICLE,
     GENDER_TO_TEXT,
     SPEACH_PART_TO_TEXT,
 )
 from ..enums import SpeachPart
-from ..translation import get_uk_translation
 
 
 def insert_word_description(editor: aqt.editor.Editor, only_audio: bool = False) -> None:
@@ -52,6 +54,12 @@ def insert_word_description(editor: aqt.editor.Editor, only_audio: bool = False)
     editor.note["Front"] = ""
     editor.note["Example"] = ""
 
+    explain_word_with_ai_response: ExplainWordResponse = explain_word_with_ai(word, speech_part)
+
+    # Add translation.
+    if not editor.note["Back"].strip():
+        editor.note["Back"] = _generate_back(explain_word_with_ai_response)
+
     # NOUN
     article_text = ""
     if speech_part == SpeachPart.NOUN:
@@ -91,26 +99,32 @@ def insert_word_description(editor: aqt.editor.Editor, only_audio: bool = False)
             )
 
     # Add examples.
-    examples = wiktionary.get_examples_from_wikitext(wikitext)
-    if examples:
-        editor.note["Example"] += '<ul class="examples">'
-        for example in examples:
-            editor.note["Example"] += f"<li>{example}</li>"
+    editor.note["Example"] += '<ul class="examples">'
+    for usage_example in explain_word_with_ai_response.usage_examples:
+        editor.note["Example"] += f"<li>{usage_example}</li>"
+    editor.note["Example"] += "</ul>"
+
+    # Add synonyms.
+    if explain_word_with_ai_response.synonyms:
+        editor.note["Example"] += (
+            '<span class="synonyms-label">Синоніми:</span><ul class="synonyms-list">'
+        )
+        for synonym in explain_word_with_ai_response.synonyms:
+            editor.note["Example"] += f"<li>{synonym.word} ({synonym.difference})</li>"
         editor.note["Example"] += "</ul>"
-    else:
-        editor.note["Example"] += "<br><br>"
+
+    # Add additional info.
+    if explain_word_with_ai_response.additional_info:
+        editor.note["Example"] += (
+            '<span class="additional-info-label">Додаткова інформація:</span>'
+            '<ul class="additional-info-list">'
+        )
+        for info in explain_word_with_ai_response.additional_info:
+            editor.note["Example"] += f"<li>{info}</li>"
+        editor.note["Example"] += "</ul>"
 
     # Add Wiktionary URL.
     editor.note["Example"] += f'<a href="{page.full_url}">{page.full_url}</a>'
-
-    # Add translation.
-    if (
-        not editor.note["Back"].strip()
-        and config["INSERT_TRANSLATION"]
-        and config["DEEPL_AUTH_KEY"]
-    ):
-        uk_word = get_uk_translation(word_to_translate, config["DEEPL_AUTH_KEY"])
-        editor.note["Back"] = f'<span style="font-weight: bold;">{uk_word}</span>'
 
     editor.set_note(editor.note)
 
@@ -136,3 +150,16 @@ def insert_word_description(editor: aqt.editor.Editor, only_audio: bool = False)
     # def callback(*args, **kwargs):
     #     print(args, kwargs)
     # editor.web.evalWithCallback("window.getSelection().toString()", callback)
+
+
+def _generate_back(explain_word_with_ai_response: ExplainWordResponse) -> str:
+    matched_text = re.search(r"(.+)\((.+)\)", explain_word_with_ai_response.ukrainian_translation)
+
+    back = (
+        f'<span style="font-weight: bold;">{matched_text.group(1)}</span>({matched_text.group(2)})'
+        if matched_text
+        else explain_word_with_ai_response.ukrainian_translation
+    )
+    if explain_word_with_ai_response.additional_context:
+        back += f'<br><span style="font-style: italic">{explain_word_with_ai_response.additional_context}</span>'
+    return back
