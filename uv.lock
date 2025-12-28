@@ -205,18 +205,6 @@ wheels = [
 ]
 
 [[package]]
-name = "deepl"
-version = "1.18.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "requests" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/82/46/1dfe623c24aac5a341bf7eedabb8d1f719df8fd3a6f45aefcd0b83e96ce0/deepl-1.18.0.tar.gz", hash = "sha256:5ae41763939441edbca7640fd344280cbee47d490641ce35206910a8b01e778e", size = 38888, upload-time = "2024-04-26T10:09:03.701Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/d3/02/fe0df955618c204ea51a2cee85461e736a939cf9d593b314adeb1c2c5d2e/deepl-1.18.0-py3-none-any.whl", hash = "sha256:2afe9adc459f5c591282e4d74570a0dc5041554d54dd687f72d3b0b77936e9ce", size = 35265, upload-time = "2024-04-26T10:09:00.978Z" },
-]
-
-[[package]]
 name = "deutsch-anki-addon"
 version = "0.1.0"
 source = { virtual = "." }
@@ -226,7 +214,6 @@ dependencies = [
 
 [package.dev-dependencies]
 addon = [
-    { name = "deepl" },
     { name = "google-genai" },
     { name = "pydantic" },
     { name = "requests" },
@@ -244,7 +231,6 @@ requires-dist = [{ name = "aqt", specifier = "~=25.9.2" }]
 
 [package.metadata.requires-dev]
 addon = [
-    { name = "deepl", specifier = "~=1.18.0" },
     { name = "google-genai", specifier = "~=1.54.0" },
     { name = "pydantic", specifier = "~=2.12.0" },
     { name = "requests", specifier = "~=2.31.0" },
