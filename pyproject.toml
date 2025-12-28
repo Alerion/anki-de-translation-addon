@@ -38,6 +38,10 @@ max-line-length = 120
 
 [tool.mypy]
 packages = ["addon"]
+exclude = [
+    "addon/dependencies/",
+]
+
 python_version = "3.13"
 # mypy_path = "mypy_stubs"
 strict = true

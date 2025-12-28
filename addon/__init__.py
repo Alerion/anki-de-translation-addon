@@ -7,6 +7,7 @@ https://developer.mozilla.org/en-US/docs/Web/API/document/execCommand
 import os.path
 import sys
 from functools import partial
+from typing import Any, Callable
 
 # Inject external dependencies.
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "./dependencies"))
@@ -15,6 +16,7 @@ import aqt.editor
 from aqt import gui_hooks, mw
 from aqt.utils import showInfo
 
+from .shortcut_actions.insert_audio_action import insert_audio
 from .translation import get_uk_translation
 from .wiktionary import (
     Gender,
@@ -136,8 +138,19 @@ GENDER_TO_ARTICLE = {
 
 def insert_word_description(editor: aqt.editor.Editor, only_audio: bool = False) -> None:
     config = mw.addonManager.getConfig(__name__)
+    if config is None:
+        showInfo("Config is not available")
+        return
+
+    if editor.note is None:
+        showInfo("No note found in editor")
+        return
 
     clipboard = editor.mw.app.clipboard()
+    if clipboard is None:
+        showInfo("Clipboard is not available")
+        return
+
     word = clipboard.text().strip()
     word_to_translate = word
 
@@ -249,36 +262,10 @@ def insert_word_description(editor: aqt.editor.Editor, only_audio: bool = False)
     # editor.web.evalWithCallback("window.getSelection().toString()", callback)
 
 
-def insert_audio(editor: aqt.editor.Editor):
-    clipboard = editor.mw.app.clipboard()
-    word = clipboard.text().strip()
-
-    if not word:
-        showInfo("No word found in clipboard")
-        return
-
-    page = find_word_page(word)
-    if not page:
-        showInfo(f"Page not found for word '{word}'")
-        return
-
-    wikitext = get_page_wikitext(page.page_id)
-    if not wikitext:
-        showInfo(f"No wikitext found for: {word}")
-        return
-
-    audio_url = get_audio_url_from_wikitext(wikitext)
-    if not audio_url:
-        showInfo(f"Audio file was not found for: {word}")
-        return
-
-    clipboard.setText(audio_url)
-    # Trigger audio paste, so Anki can replace with proper tag.
-    editor.onPaste()
-    clipboard.setText(word)
+type ShortcutCallback = Callable[[Any], None]
 
 
-def add_shortcuts(shortcuts: list[tuple], editor: aqt.editor.Editor) -> None:
+def add_shortcuts(shortcuts: list[tuple[str, ShortcutCallback]], editor: aqt.editor.Editor) -> None:
     shortcuts.append(("F1", partial(insert_word_description, editor)))
     # For edit page. F1 does not work.
     shortcuts.append(("F12", partial(insert_word_description, editor)))

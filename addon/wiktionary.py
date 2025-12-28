@@ -1,7 +1,6 @@
 import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
 
 import requests
 
@@ -34,7 +33,7 @@ SEARCH_URL = "https://de.wiktionary.org/w/api.php"
 HEADERS = {"User-Agent": "AnkiAddonBot https://github.com/Alerion/anki-de-translation-addon"}
 
 
-def find_word_page(word: str) -> Optional[Page]:
+def find_word_page(word: str) -> Page | None:
     params = {
         "action": "query",
         "format": "json",
@@ -68,6 +67,7 @@ def get_page_wikitext(page_id: int) -> str:
     }
     response = requests.get(PAGE_URL, params, headers=HEADERS).json()
     wikitext = response["parse"]["wikitext"]["*"]
+    assert isinstance(wikitext, str)
     return wikitext
 
 
@@ -75,7 +75,7 @@ def get_page_wikitext(page_id: int) -> str:
 FILES_URL = "https://de.wiktionary.org/w/api.php"
 
 
-def get_file_url(file_name: str) -> Optional[str]:
+def get_file_url(file_name: str) -> str | None:
     params = {
         "action": "query",
         "format": "json",
@@ -86,13 +86,15 @@ def get_file_url(file_name: str) -> Optional[str]:
     response = requests.get(FILES_URL, params, headers=HEADERS).json()
     pages = list(response["query"]["pages"].values())
     imageinfo = pages[0]["imageinfo"][0]
-    return imageinfo["url"]
+    image_url = imageinfo["url"]
+    assert isinstance(image_url, str)
+    return image_url
 
 
 AUDIO_RE = re.compile(r"\{\{Audio\|(?P<file>.*?)(|spr=(?P<spr>at))?\}\}")
 
 
-def get_best_audio_match(matches) -> Optional[str]:
+def get_best_audio_match(matches: list[re.Match[str]]) -> str | None:
     """
     Return latest one withou specified language. It has the best audio quality.
     """
@@ -105,39 +107,40 @@ def get_best_audio_match(matches) -> Optional[str]:
 
     if matches:
         return matches[0].group("file")
+    return None
 
 
 AUSSPRACHE_RE = re.compile(r"\{\{Aussprache\}\}(?P<aussprache>.*?)\n\{\{[^{]+\}\}", re.DOTALL)
 
 
-def get_audio_url_from_wikitext(wikitext: str) -> Optional[str]:
+def get_audio_url_from_wikitext(wikitext: str) -> str | None:
     match = AUSSPRACHE_RE.search(wikitext)
     if not match:
-        return
+        return None
 
     matches = list(AUDIO_RE.finditer(match.group("aussprache")))
 
     if not matches:
-        return
+        return None
     audio_file_name = get_best_audio_match(matches)
     if not audio_file_name:
-        return
+        return None
 
     audio_file_url = get_file_url(audio_file_name)
     if not audio_file_url:
         print(f"Audio file URL was not found for file: {audio_file_name}")
-        return
+        return None
     return audio_file_url
 
 
 IPA_RE = re.compile(r"\{\{Lautschrift\|(.*?)\}\}")
 
 
-def get_ipa_from_wikitext(wikitext: str) -> Optional[str]:
-    matches = IPA_RE.findall(wikitext)
+def get_ipa_from_wikitext(wikitext: str) -> str | None:
+    matches: list[str] = IPA_RE.findall(wikitext)
 
     if not matches:
-        return
+        return None
     return matches[0]
 
 
@@ -147,10 +150,10 @@ SPEECH_PART_RE = re.compile(
 KEIN_SINGULAR = "{{kSg.}}"
 
 
-def get_speach_part_from_wikitext(wikitext: str) -> Optional[SpeachPart]:
+def get_speach_part_from_wikitext(wikitext: str) -> SpeachPart | None:
     matches = list(SPEECH_PART_RE.finditer(wikitext))
     if not matches:
-        return
+        return None
     speech_part_match = matches[0].group("part")
     if speech_part_match == "Substantiv":
         if KEIN_SINGULAR in wikitext:
@@ -164,12 +167,13 @@ def get_speach_part_from_wikitext(wikitext: str) -> Optional[SpeachPart]:
         return SpeachPart.ADVERB
     if speech_part_match == "Personalpronomen":
         return SpeachPart.PRONOUN
+    return None
 
 
 GENDER_RE = re.compile(r"Genus( \d)?=(?P<gender>f|m|n)")
 
 
-def get_gender_from_wikitext(wikitext: str) -> Optional[Gender]:
+def get_gender_from_wikitext(wikitext: str) -> Gender | None:
     matches = list(GENDER_RE.finditer(wikitext))
     speech_part_match = matches[0].group("gender")
 
@@ -179,25 +183,26 @@ def get_gender_from_wikitext(wikitext: str) -> Optional[Gender]:
         return Gender.FEMALE
     if speech_part_match == "n":
         return Gender.NEUTRAL
+    return None
 
 
 PLURAL_RE = re.compile(r"Nominativ Plural(?: 1)?=(?P<plural>\w+)")
 
 
-def get_plural_from_wikitext(wikitext: str) -> Optional[str]:
+def get_plural_from_wikitext(wikitext: str) -> str | None:
     matches = list(PLURAL_RE.finditer(wikitext))
     if not matches:
-        return
+        return None
     return matches[0].group("plural")
 
 
 GENITIVE_RE = re.compile(r"Genitiv Singular(?: 1)?=(?P<genitive>\w+)")
 
 
-def get_genitive_from_wikitext(wikitext: str) -> Optional[str]:
+def get_genitive_from_wikitext(wikitext: str) -> str | None:
     matches = list(GENITIVE_RE.finditer(wikitext))
     if not matches:
-        return
+        return None
     return matches[0].group("genitive")
 
 
@@ -231,28 +236,28 @@ def get_examples_from_wikitext(wikitext: str) -> list[str]:
 HELP_VERB_RE = re.compile(r"Hilfsverb=(?P<help_verb>\w+)")
 
 
-def get_help_verb_from_wikitext(wikitext: str) -> Optional[str]:
+def get_help_verb_from_wikitext(wikitext: str) -> str | None:
     matches = list(HELP_VERB_RE.finditer(wikitext))
     if not matches:
-        return
+        return None
     return matches[0].group("help_verb")
 
 
 PRATERITUM_RE = re.compile(r"Präteritum_ich=(?P<prateritum>[\w ]+)")
 
 
-def get_prateritum_from_wikitext(wikitext: str) -> Optional[str]:
+def get_prateritum_from_wikitext(wikitext: str) -> str | None:
     matches = list(PRATERITUM_RE.finditer(wikitext))
     if not matches:
-        return
+        return None
     return matches[0].group("prateritum")
 
 
 PARTIZIP2_RE = re.compile(r"Partizip II=(?P<partizip2>[\w ]+)")
 
 
-def get_partizip2_from_wikitext(wikitext: str) -> Optional[str]:
+def get_partizip2_from_wikitext(wikitext: str) -> str | None:
     matches = list(PARTIZIP2_RE.finditer(wikitext))
     if not matches:
-        return
+        return None
     return matches[0].group("partizip2")
