@@ -29,11 +29,11 @@ class ExplainWordResponse(BaseModel):
     )
 
 
-def explain_word_with_ai(word: str, part_of_speech: SpeachPart) -> ExplainWordResponse:
+def explain_word_with_ai(word: str, part_of_speech: SpeachPart | None) -> ExplainWordResponse:
     explain_word_prompt_template = get_explain_word_prompt()
     explain_word_prompt_params = {
         "word": word,
-        "part_of_speech": part_of_speech.value,
+        "part_of_speech": part_of_speech.value if part_of_speech else "undefined",
     }
     explain_word_prompt = explain_word_prompt_template % explain_word_prompt_params
 
