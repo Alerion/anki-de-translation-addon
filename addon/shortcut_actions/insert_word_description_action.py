@@ -100,6 +100,11 @@ def insert_word_description(editor: aqt.editor.Editor) -> None:
                 f'&nbsp;<span class="hilfsverb-value">{help_verb}</span>'
             )
 
+    if explain_word_with_ai_response.additional_context:
+        editor.note["Example"] += (
+            f"<br><br>{italic(explain_word_with_ai_response.additional_context)}"
+        )
+
     # Add examples.
     editor.note["Example"] += '<ul class="examples">'
     for usage_example in explain_word_with_ai_response.usage_examples:
@@ -158,10 +163,6 @@ def insert_word_description(editor: aqt.editor.Editor) -> None:
 
 def _generate_back(explain_word_with_ai_response: ExplainWordResponse) -> str:
     back = _format_text_with_parentheses(explain_word_with_ai_response.ukrainian_translation)
-
-    if explain_word_with_ai_response.additional_context:
-        back += f"<br>{italic(explain_word_with_ai_response.additional_context)}"
-
     return back
 
 
